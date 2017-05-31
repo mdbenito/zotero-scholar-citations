@@ -154,22 +154,26 @@ Zotero.ScholarCitations.updateItem = function(item) {
                             req.responseText);
                     try {
                         var old = item.getField('extra')
-                            if (old.length == 0 || old.search(/^\d{5}$/) != -1) {
-                                item.setField('extra', citations);
-                            } else if (old.search(/^\d{5} *\n/) != -1) {
+                            if (old.length == 0 || old.search(/^citecount: \d{5}$/) != -1) {
+                                item.setField('extra', 'citecount: ' + citations);
+                            } else if (old.search(/^citecount: \d{5} *\n/) != -1) {
                                 item.setField(
                                         'extra',
-                                        old.replace(/^\d{5} */, citations + ' '));
-                            } else if (old.search(/^\d{5} *[^\n]+/) != -1) {
+                                        old.replace(/^citecount: \d{5} */,
+                                                    'citecount: ' + citations + ' '));
+                            } else if (old.search(/^citecount: \d{5} *[^\n]+/) != -1) {
                                 item.setField(
                                         'extra',
-                                        old.replace(/^\d{5} */, citations + ' \n'));
-                            } else if (old.search(/^\d{5}/) != -1) {
+                                        old.replace(/^citecount: \d{5} */,
+                                                    'citecount: ' +  citations + ' \n'));
+                            } else if (old.search(/^citecount: \d{5}/) != -1) {
                                 item.setField(
                                         'extra',
-                                        old.replace(/^\d{5}/, citations));
+                                        old.replace(/^citecount: \d{5}/,
+                                                    'citecount: ' +  citations));
                             } else {
-                                item.setField('extra', citations + ' \n' + old);
+                                item.setField('extra',
+                                              'citecount: ' + citations + ' \n' + old);
                             }
                         item.save();
                     } catch (e) {}
