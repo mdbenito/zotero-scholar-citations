@@ -50,7 +50,7 @@ Zotero.ScholarCitations.updateSelectedEntity = function(libraryId) {
 
     if (collection) {
         var items = [];
-        collection.getChildren(true, false, 'item').forEach(function (item) {
+        collection.getChildItems(false).forEach(function (item) {
             items.push(Zotero.Items.get(item.id));
         });
         Zotero.ScholarCitations.updateItems(items);
@@ -61,7 +61,7 @@ Zotero.ScholarCitations.updateSelectedEntity = function(libraryId) {
         }
         var items = [];
         group.getCollections().forEach(function(collection) {
-            collection.getChildren(true, false, 'item').forEach(function(item) {
+            collection.getChildItems(false).forEach(function(item) {
                 items.push(Zotero.Items.get(item.id));
             })
         });
@@ -116,7 +116,7 @@ Zotero.ScholarCitations.updateNextItem = function() {
 };
 
 Zotero.ScholarCitations.generateItemUrl = function(item) {
-    var baseUrl = 'http://scholar.google.com/';
+    var baseUrl = 'https://scholar.google.com/';
     var url = baseUrl +
         'scholar?hl=en&as_q=' +
         encodeURIComponent(item.getField('title')).replace(/ /g, '+') +
@@ -125,7 +125,7 @@ Zotero.ScholarCitations.generateItemUrl = function(item) {
     var creators = item.getCreators();
     if (creators.length > 0) {
         url += '&as_sauthors=' +
-            encodeURIComponent(creators[0].ref.lastName).replace(/ /g, '+');
+            encodeURIComponent(creators[0].lastName).replace(/ /g, '+');
     } else {
         var date = item.getField('date');
         if (date != '') {
@@ -137,11 +137,6 @@ Zotero.ScholarCitations.generateItemUrl = function(item) {
 };
 
 Zotero.ScholarCitations.updateItem = function(item) {
-    if (typeof item.attachmentHash !== 'undefined') {
-        Zotero.ScholarCitations.updateNextItem();
-        return;
-    }
-
     var req = new XMLHttpRequest();
     var url = Zotero.ScholarCitations.generateItemUrl(item);
     req.open('GET', url, true);
@@ -187,7 +182,11 @@ Zotero.ScholarCitations.updateItem = function(item) {
                 req2.open('GET', url, true);
                 req2.onreadystatechange = function() {
                     if (req2.readyState == 4) {
-                        if (typeof ZoteroStandalone !== 'undefined') {
+                        if (typeof Zotero.launchURL !== 'undefined') {
+                            Zotero.launchURL(url);
+                        } else if (typeof Zotero.openInViewer !== 'undefined') {
+                            Zotero.openInViewer(url);
+                        } else if (typeof ZoteroStandalone !== 'undefined') {
                             ZoteroStandalone.openInViewer(url);
                         } else {
                             window.gBrowser.loadOneTab(
